@@ -6,9 +6,22 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  dbviewer:
+    image: sqlpad/sqlpad:5
+    ports:
+      - 3000:3000
+    environment:
+      SQLPAD_AUTH_DISABLED: "true"
+      SQLPAD_AUTH_DISABLED_DEFAULT_ROLE: "admin"
+      SQLPAD_CONNECTIONS__pgdemo__name: "Postgres"
+      SQLPAD_CONNECTIONS__pgdemo__driver: "postgres"
+      SQLPAD_CONNECTIONS__pgdemo__host: "db"
+      SQLPAD_CONNECTIONS__pgdemo__database: ${POSTGRES_DB}
+      SQLPAD_CONNECTIONS__pgdemo__username: ${POSTGRES_USER}
+      SQLPAD_CONNECTIONS__pgdemo__password: ${POSTGRES_PASSWORD}
 
 volumes:
   postgres_data:
