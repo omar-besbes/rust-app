@@ -11,6 +11,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
   dbviewer:
     image: sqlpad/sqlpad:5
+    depends_on:
+      - db
     ports:
       - 3000:3000
     environment:
@@ -22,6 +24,16 @@ services:
       SQLPAD_CONNECTIONS__pgdemo__database: ${POSTGRES_DB}
       SQLPAD_CONNECTIONS__pgdemo__username: ${POSTGRES_USER}
       SQLPAD_CONNECTIONS__pgdemo__password: ${POSTGRES_PASSWORD}
+  app:
+    image: ghcr.io/omar-besbes/rust-app:latest
+    build:
+      context: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+    ports:
+      - 8080:8080
 
 volumes:
   postgres_data:
