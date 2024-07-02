@@ -11,7 +11,7 @@ pub async fn add_todo_service(pool: &PgPool, todo: NewTodoDTO) -> Result<Todo, s
         "#,
         todo.title,
         todo.description,
-        todo.completed.unwrap_or(false)
+        todo.completed
     )
     .fetch_one(pool)
     .await?;

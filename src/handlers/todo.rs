@@ -1,6 +1,8 @@
 use crate::dtos::todo::NewTodoDTO;
 use crate::schemas::todo::Todo;
 use crate::services::todo::{add_todo_service, list_todos_service};
+use axum::body::Body;
+use axum::response::Response;
 use axum::{
     extract::Extension,
     http::StatusCode,
@@ -9,12 +11,30 @@ use axum::{
 };
 use sqlx::{PgPool, Pool, Postgres};
 use tracing::{error, info};
+use validator::Validate;
 
 async fn add_todo(
     Extension(pool): Extension<PgPool>,
     Json(payload): Json<NewTodoDTO>,
-) -> Result<Json<Todo>, StatusCode> {
+) -> Result<Json<Todo>, Response<Body>> {
     info!("Received request to add todo: {:?}", payload);
+
+    if let Err(validation_errors) = payload.validate() {
+        error!("Validation error: {:?}", validation_errors);
+        let error_message = match validation_errors.field_errors().get("title") {
+            Some(errors) => {
+                format!("{}", errors.first().unwrap())
+            }
+            None => {
+                format!("Unknown validation error for field: title")
+            }
+        };
+
+        return Err(Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(error_message))
+            .unwrap());
+    }
 
     match add_todo_service(&pool, payload).await {
         Ok(created_todo) => {
@@ -23,7 +43,10 @@ async fn add_todo(
         }
         Err(e) => {
             error!("Failed to add todo: {}", e);
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
+            Err(Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Body::empty())
+                .unwrap())
         }
     }
 }

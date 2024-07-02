@@ -11,3 +11,4 @@ sqlx = { version = "0.7.4", features = ["uuid", "postgres", "tls-rustls", "runti
 tokio = { version = "1.38.0", features = ["full"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
+validator = { version = "0.18.1", features = ["derive"] }
